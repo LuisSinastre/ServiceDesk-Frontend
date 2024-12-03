@@ -1,5 +1,5 @@
 // api/routes.ts
-export const API_URL = 'https://api.exemplo.com'; // Base URL da sua API
+export const API_URL = 'https://php-myadmin.net/db_structure.php?db=if0_37837875_bdservicedeskonline'; // Base URL da sua API
 
 // Definindo as rotas com agrupamento por tipo de operação
 export const routes = {
