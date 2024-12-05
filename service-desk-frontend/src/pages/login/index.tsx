@@ -22,6 +22,7 @@ export const Login = () => {
     const success = await loginUser(); // Chama loginUser e verifica se o login foi bem-sucedido
     if (success) {
       navigate("/home"); // Redireciona para /home se o login for bem-sucedido
+      
     }
   };
 

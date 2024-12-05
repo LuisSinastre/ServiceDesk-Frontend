@@ -4,46 +4,68 @@ import { useNavigate } from "react-router-dom";
 // Tipo de dados do contexto de autenticação
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (token: string) => void;
+  token: string | null;
+  permissions: string[];
+  login: (token: string, permissions: string[]) => void;
   logout: () => void;
-  verifyToken: () => void;  // Função para verificar o token
+  verifyToken: () => boolean;  // Função para verificar o token
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const navigate = useNavigate();
 
   // Verifica o token no localStorage quando o componente é montado
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      setIsAuthenticated(true);  // Se houver token, o usuário está autenticado
+    const storedToken = localStorage.getItem("authToken");
+    const storedPermissions = JSON.parse(localStorage.getItem("authPermissions") || "[]");
+
+    
+    if (storedToken && storedPermissions.length > 0) {
+      setIsAuthenticated(true);
+      setToken(storedToken);
+      setPermissions(storedPermissions);  // Se houver token, o usuário está autenticado
     } else {
       setIsAuthenticated(false);  // Caso contrário, não autenticado
+      setToken(null);
+      setPermissions([]);
       navigate("/");  // Redireciona para a tela de login
     }
   }, [navigate]);
 
-  const login = (token: string) => {
-    localStorage.setItem("authToken", token);
+
+
+
+
+
+  const login = (newToken: string, newPermissions: string[]) => {
+    localStorage.setItem("authToken", newToken);
+    localStorage.setItem("authPermissions", JSON.stringify(newPermissions)); // Armazena as permissões
     setIsAuthenticated(true);
+    setToken(newToken);
+    setPermissions(newPermissions);
     navigate("/home");
   };
 
   const logout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("authPermissions");
     setIsAuthenticated(false);
+    setToken(null);
+    setPermissions([]);
     navigate("/login");
   };
 
   const verifyToken = () => {
-    return localStorage.getItem("authToken") ? true : false;
+    return token !== null && permissions.length > 0;
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, verifyToken }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, permissions, login, logout, verifyToken }}>
       {children}
     </AuthContext.Provider>
   );
