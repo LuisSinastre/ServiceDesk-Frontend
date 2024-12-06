@@ -1,71 +1,93 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { availablePages, Page } from "../config/pagesConfig";
 
 // Tipo de dados do contexto de autenticação
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  permissions: string[];
-  login: (token: string, permissions: string[]) => void;
+  permissions: number[]; // Alterar para um array de números
+  pages: Page[];
+  login: (token: string, permissions: number[]) => void; // Alterar a assinatura da função login
   logout: () => void;
-  verifyToken: () => boolean;  // Função para verificar o token
+  verifyToken: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [permissions, setPermissions] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<number[]>([]); // Alterar para números
+  const [pages, setPages] = useState<Page[]>([]);
   const navigate = useNavigate();
 
-  // Verifica o token no localStorage quando o componente é montado
+  // Atualiza as páginas acessíveis com base nas permissões do usuário
+  const updateUserPages = (permissions: number[]) => {
+    const filteredPages = availablePages.filter((page: Page) =>
+      permissions.includes(page.id_page) // Verificando se o id_pagina está nas permissões
+    );
+    setPages(filteredPages);
+  };
+
+  // Verifica o token no localStorage ao montar o componente
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
     const storedPermissions = JSON.parse(localStorage.getItem("authPermissions") || "[]");
 
-    
-    if (storedToken && storedPermissions.length > 0) {
+    const isValidPermissions =
+      Array.isArray(storedPermissions) &&
+      storedPermissions.every((p) => typeof p === "number"); // Verifica se as permissões são números
+
+    if (storedToken && isValidPermissions) {
       setIsAuthenticated(true);
       setToken(storedToken);
-      setPermissions(storedPermissions);  // Se houver token, o usuário está autenticado
+      setPermissions(storedPermissions);
+      updateUserPages(storedPermissions); // Atualiza as páginas ao recuperar permissões
     } else {
-      setIsAuthenticated(false);  // Caso contrário, não autenticado
+      setIsAuthenticated(false);
       setToken(null);
       setPermissions([]);
-      navigate("/");  // Redireciona para a tela de login
+      setPages([]);
+      if (window.location.pathname !== "/") {
+        navigate("/"); // Redireciona para a tela de login se não estiver na página inicial
+      }
     }
   }, [navigate]);
 
-
-
-
-
-
-  const login = (newToken: string, newPermissions: string[]) => {
+  // Realiza login
+  const login = (newToken: string, newPermissions: number[]) => { // Alterar para permissões como números
+    // Armazenar o token e as permissões no localStorage
     localStorage.setItem("authToken", newToken);
-    localStorage.setItem("authPermissions", JSON.stringify(newPermissions)); // Armazena as permissões
+    localStorage.setItem("authPermissions", JSON.stringify(newPermissions)); // Armazenar apenas os ids
+
+    // Atualizar o estado
     setIsAuthenticated(true);
     setToken(newToken);
-    setPermissions(newPermissions);
+    setPermissions(newPermissions);  // Atualizar permissões como números
+    updateUserPages(newPermissions);  // Atualiza as páginas acessíveis com base nos IDs
     navigate("/home");
   };
 
+  // Realiza logout
   const logout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authPermissions");
     setIsAuthenticated(false);
     setToken(null);
     setPermissions([]);
+    setPages([]);
     navigate("/login");
   };
 
-  const verifyToken = () => {
-    return token !== null && permissions.length > 0;
-  };
+  // Verifica se o token é válido
+  const verifyToken = () => token !== null && permissions.length > 0;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, permissions, login, logout, verifyToken }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, token, permissions, pages, login, logout, verifyToken }}
+    >
       {children}
     </AuthContext.Provider>
   );
