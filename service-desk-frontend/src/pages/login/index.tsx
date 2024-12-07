@@ -1,9 +1,10 @@
-// pages/Login/index.tsx
-import React from "react";
+// src/pages/Login/index.tsx
+import React, { useEffect } from "react";
 import { Container, Content, InputGroup } from "./styles";
 import { Button, InputText, Text } from "../../components";
 import { useLogin } from "../../hooks/useLogin";
-import { useNavigate } from "react-router-dom"; // Importe o hook useNavigate
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext"; // Importe o contexto de autenticação
 
 export const Login = () => {
   const {
@@ -14,15 +15,22 @@ export const Login = () => {
     handleEmailChange,
     handleSenhaChange,
     loginUser,
-  } = useLogin(); // Use o hook para login
+  } = useLogin();
 
-  const navigate = useNavigate(); // Crie a instância do navigate
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); // Pegando o estado de autenticação do contexto
+
+  useEffect(() => {
+    // Se o usuário já estiver autenticado, redirecionar automaticamente para /home
+    if (isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async () => {
-    const success = await loginUser(); // Chama loginUser e verifica se o login foi bem-sucedido
+    const success = await loginUser();
     if (success) {
-      navigate("/home"); // Redireciona para /home se o login for bem-sucedido
-      
+      navigate("/home");
     }
   };
 
@@ -56,7 +64,7 @@ export const Login = () => {
           />
         </InputGroup>
 
-        {error && <Text color="red">{error}</Text>} {/* Exibe o erro, se houver */}
+        {error && <Text color="red">{error}</Text>}
 
         <Button variant="primary" onClick={handleSubmit} disabled={loading}>
           <Text color="#FFFFFF">{loading ? "Carregando..." : "Entrar"}</Text>
