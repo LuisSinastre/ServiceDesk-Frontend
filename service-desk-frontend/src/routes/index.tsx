@@ -2,13 +2,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Login } from "../pages/login";
-import { Home } from "../pages/home/home";
+import Home from "../pages/home/home"; // Corrigindo para importar como default
 import { AuthProvider } from "../contexts/AuthContext";
 
 const App = () => {
   return (
     <Router>
-      <AuthProvider> 
+      <AuthProvider>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
