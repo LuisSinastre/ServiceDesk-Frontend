@@ -1,44 +1,57 @@
-// src/pages/home/home.tsx
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Importe o hook useNavigate
-import { useAuth } from "../../contexts/AuthContext"; // Importe o useAuth para acessar o contexto
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  Container,
+  Content,
+  Title,
+  PagesContainer,
+  Button,
+  NoAccessMessage,
+} from "./styles";
 
-export const Home = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, pages } = useAuth(); // Acesse o estado de autenticação
+  const { isAuthenticated, pages, logout } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/"); // Redireciona para a tela de login se não estiver autenticado
+      navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
   const handlePageClick = (page: string) => {
     navigate(`/${page.toLowerCase()}`);
-  }
+  };
 
   return (
-    <div>
-      <h1>Bem-vindo à Home</h1>
-      {/* Conteúdo da home */}
-      <br></br>
-      <div>
-        <h2>Páginas Acessíveis:</h2>
-        <br></br>
-        {pages.length > 0 ? (
-          pages.map((page) => (
-            <button
-              key={page.id_page}
-              onClick={() => handlePageClick(page.allowed_page)}
-            >
-              {page.allowed_page}
-            </button>
-          ))
-        ) : (
-          <p>Você não tem permissões para acessar nenhuma página.</p>
-        )}
-      </div>
-
-    </div>
+    <Container>
+      <Content>
+        <Title>O que precisa fazer hoje?</Title>
+        <PagesContainer>
+          {pages.length > 0 ? (
+            <div>
+              {pages.map((page) => (
+                <Button
+                  key={page.id_page}
+                  onClick={() => handlePageClick(page.allowed_page)}
+                >
+                  {page.allowed_page}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <NoAccessMessage>
+              Você não tem permissões para acessar nenhuma página.
+            </NoAccessMessage>
+          )}
+        </PagesContainer>
+        <Button onClick={logout} style={{ marginTop: "20px", backgroundColor: "#f44336", color: "white" }}>
+          LOGOUT
+        </Button>
+      </Content>
+    </Container>
   );
 };
+
+export default Home;
