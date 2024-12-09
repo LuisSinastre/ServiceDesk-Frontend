@@ -1,15 +1,22 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { availablePages, Page } from "../config/pagesConfig";
+import { jwtDecode } from "jwt-decode";
 
-// Tipo de dados do contexto de autenticação
+interface DecodedToken {
+  sub: string;
+  nome: string;
+  cargo: string;
+  ids: number[];
+  exp: number;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
   permissions: number[];
   pages: Page[];
-  login: (token: string, permissions: number[]) => void;
+  login: (token: string) => void;
   logout: () => void;
   verifyToken: () => boolean;
 }
@@ -24,7 +31,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Atualiza as páginas acessíveis com base nas permissões do usuário
   const updateUserPages = (permissions: number[]) => {
     const filteredPages = availablePages.filter((page) =>
       permissions.includes(page.id_page)
@@ -32,10 +38,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPages(filteredPages);
   };
 
-  // Função logout com useCallback para estabilizar a função entre as renderizações
   const logout = useCallback(() => {
     localStorage.removeItem("authToken");
-    localStorage.removeItem("authPermissions");
     setIsAuthenticated(false);
     setToken(null);
     setPermissions([]);
@@ -44,19 +48,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [navigate]);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const permissionsString = localStorage.getItem("authPermissions");
-        const permissions = permissionsString ? JSON.parse(permissionsString) : [];
+        const storedToken = localStorage.getItem("authToken");
 
-        if (token && permissions.length > 0) {
-          setIsAuthenticated(true);
-          setToken(token);
-          setPermissions(permissions);
-          updateUserPages(permissions);
+        if (storedToken) {
+          const decoded: DecodedToken = jwtDecode(storedToken);
+
+          if (decoded.exp * 1000 > Date.now()) {
+            setIsAuthenticated(true);
+            setToken(storedToken);
+            setPermissions(decoded.ids);
+            updateUserPages(decoded.ids);
+          } else {
+            throw new Error("Token expirado.");
+          }
         } else {
-          throw new Error("Token inválido ou permissões inválidas.");
+          throw new Error("Token não encontrado.");
         }
       } catch (error) {
         console.error("Erro ao carregar autenticação:", error);
@@ -67,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     initializeAuth();
-  }, [navigate, logout]); // Incluindo `logout` como dependência estável
+  }, [logout]);
 
   const verifyToken = () => !!token && permissions.length > 0;
 
@@ -82,14 +90,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         token,
         permissions,
         pages,
-        login: (token, permissions) => {
+        login: (token) => {
           localStorage.setItem("authToken", token);
-          localStorage.setItem("authPermissions", JSON.stringify(permissions));
 
+          const decoded: DecodedToken = jwtDecode(token);
           setIsAuthenticated(true);
           setToken(token);
-          setPermissions(permissions);
-          updateUserPages(permissions);
+          setPermissions(decoded.ids);
+          updateUserPages(decoded.ids);
 
           navigate("/home");
         },

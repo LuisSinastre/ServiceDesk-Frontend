@@ -2,8 +2,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Login } from "../pages/login";
-import Home from "../pages/home/home"; // Corrigindo para importar como default
 import { AuthProvider } from "../contexts/AuthContext";
+import Home from "../pages/home/home"; 
+import Opening from "../pages/opening/opening"; 
+import Search from "../pages/search/search";
+
+
 
 const App = () => {
   return (
@@ -12,6 +16,8 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/opening" element={<Opening />} />
+          <Route path="/search" element={<Search />} />
 
           {/* Rota para links inválidos */}
           <Route path="*" element={<Navigate to="/home" />} />
