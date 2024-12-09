@@ -27,8 +27,12 @@ export const Title = styled.h1`
 `;
 
 export const PagesContainer = styled.div`
-  text-align: left;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 20px;
+  text-align: center;
 
   h2 {
     color: #333;

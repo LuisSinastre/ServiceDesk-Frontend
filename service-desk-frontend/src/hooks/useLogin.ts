@@ -28,8 +28,8 @@ export const useLogin = () => {
       // Chama a função login da instância axios
       const response = await axiosInstance.login(email, password);
       
-      if (response?.token && response?.permissions) {
-        login(response.token, response.permissions); // Usando o login do contexto para armazenar o token
+      if (response?.token) {
+        login(response.token); // Usando o login do contexto para armazenar o token
         console.log(response);
         return true; // Retorna true se o login for bem-sucedido
       }

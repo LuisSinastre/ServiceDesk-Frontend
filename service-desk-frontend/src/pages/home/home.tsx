@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { availablePages } from "../../config/pagesConfig";
+import { jwtDecode } from "jwt-decode";
 import {
   Container,
   Content,
@@ -10,9 +12,15 @@ import {
   NoAccessMessage,
 } from "./styles";
 
+
+interface DecodedToken {
+  nome: string;
+  }
+
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, pages, logout } = useAuth();
+  const { isAuthenticated, pages, token, logout } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,25 +28,46 @@ const Home: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handlePageClick = (page: string) => {
-    navigate(`/${page.toLowerCase()}`);
+  const handlePageClick = (route: string) => {
+    navigate(`/${route}`);
+  };
+
+
+  const getname = () => {
+    try {
+      if (token) {
+        const decoded: DecodedToken = jwtDecode(token);
+        return decoded.nome;
+      }
+    } catch (error) {
+      console.error("Erro ao decodificar token", error);
+    }
+    return "";
   };
 
   return (
     <Container>
       <Content>
-        <Title>O que precisa fazer hoje?</Title>
+        <Title>Olá {getname()}, o que precisa fazer hoje?</Title>
         <PagesContainer>
           {pages.length > 0 ? (
             <div>
-              {pages.map((page) => (
-                <Button
-                  key={page.id_page}
-                  onClick={() => handlePageClick(page.allowed_page)}
-                >
-                  {page.allowed_page}
-                </Button>
-              ))}
+              {pages.map((page) => {
+                // Buscar a configuração da página pelo id
+                const pageConfig = availablePages.find(
+                  (p) => p.id_page === page.id_page
+                );
+                return (
+                  pageConfig && (
+                    <Button
+                      key={page.id_page}
+                      onClick={() => handlePageClick(pageConfig.route)}
+                    >
+                      {pageConfig.allowed_page}
+                    </Button>
+                  )
+                );
+              })}
             </div>
           ) : (
             <NoAccessMessage>
@@ -46,7 +75,10 @@ const Home: React.FC = () => {
             </NoAccessMessage>
           )}
         </PagesContainer>
-        <Button onClick={logout} style={{ marginTop: "20px", backgroundColor: "#f44336", color: "white" }}>
+        <Button
+          onClick={logout}
+          style={{ marginTop: "20px", backgroundColor: "#f44336", color: "white" }}
+        >
           LOGOUT
         </Button>
       </Content>
