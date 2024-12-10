@@ -1,34 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { routes } from "../../api/routes";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axios";
 import { useAuth } from "../../contexts/AuthContext";
+import TicketForm from "./ticketform";
+import { Container, Content, TipoLista, TipoCard, HomeButton } from "./styles";
 
+// Interfaces
 interface Chamado {
   id: number;
-  detalhamento: string;
+  tipo_chamado: string;
+  submotivo: string;
+  formulario: Record<string, string>;
+}
+
+interface ChamadosAgrupados {
+  [tipo: string]: Chamado[];
 }
 
 const Opening: React.FC = () => {
-  const { token } = useAuth(); // Recuperando token autenticado
-  const [chamados, setChamados] = useState<Chamado[]>([]); // Declarando o tipo do estado
+  const { token } = useAuth();
+  const [chamadosAgrupados, setChamadosAgrupados] = useState<ChamadosAgrupados>({});
+  const [selectedTipo, setSelectedTipo] = useState<Chamado | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChamados = async () => {
       if (token) {
         try {
-          const response = await fetch(routes.requisitions.chamados, {
-            method: "GET",
+          const response = await axiosInstance.get("/ticket_types", {
             headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
           });
 
-          if (!response.ok) {
-            throw new Error("Erro ao buscar chamados.");
-          }
+          // Agrupando os chamados por tipo
+          const agrupados = response.data.reduce((acc: ChamadosAgrupados, chamado: Chamado) => {
+            if (!acc[chamado.tipo_chamado]) {
+              acc[chamado.tipo_chamado] = [];
+            }
+            acc[chamado.tipo_chamado].push(chamado);
+            return acc;
+          }, {});
 
-          const data: Chamado[] = await response.json();
-          setChamados(data);
+          setChamadosAgrupados(agrupados);
         } catch (error) {
           console.error("Erro ao buscar chamados:", error);
         }
@@ -38,19 +52,45 @@ const Opening: React.FC = () => {
     fetchChamados();
   }, [token]);
 
+  const handleTipoChamadoClick = (chamado: Chamado) => {
+    setSelectedTipo(chamado);
+  };
+
   return (
-    <div>
-      <h1>Lista de Chamados</h1>
-      <ul>
-        {chamados.length > 0 ? (
-          chamados.map((chamado, index) => (
-            <li key={index}>{chamado.detalhamento}</li>
+    <Container>
+      {/* Botão Home */}
+      <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
+
+      <h1>Tipos de Chamados Disponíveis</h1>
+      <Content>
+        {Object.keys(chamadosAgrupados).length > 0 ? (
+          Object.keys(chamadosAgrupados).map((tipo) => (
+            <div key={tipo}>
+              <h2>{tipo}</h2>
+              <TipoLista>
+                {chamadosAgrupados[tipo].map((chamado) => (
+                  <TipoCard
+                    key={chamado.id}
+                    onClick={() => handleTipoChamadoClick(chamado)}
+                  >
+                    {chamado.submotivo}
+                  </TipoCard>
+                ))}
+              </TipoLista>
+            </div>
           ))
         ) : (
-          <li>Carregando dados...</li>
+          <p>Carregando...</p>
         )}
-      </ul>
-    </div>
+
+        {selectedTipo && (
+          <div>
+            <h2>Preencha o formulário para: {selectedTipo.tipo_chamado}</h2>
+            <TicketForm tipoChamado={selectedTipo} />
+          </div>
+        )}
+      </Content>
+    </Container>
   );
 };
 
