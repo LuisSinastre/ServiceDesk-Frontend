@@ -7,6 +7,8 @@ export const routes = {
     logout: `${API_URL}/logout`,      // Rota para logout (POST)
   },
   requisitions: {
-    chamados: `${API_URL}/chamados`, // Rota para enviar a requisição para o back para puxar os chamados disponíveis
-  }
+    ticket_types: `${API_URL}/ticket_types`, // Rota para enviar a requisição para o back para puxar os chamados disponíveis
+    list_tickets: `${API_URL}/list_tickets`, // Rota para listar os chamados abertos pelo usuário
+    ticket_detail: `${API_URL}/ticket_detail`, // Rota para detalhamento dos chamados
+  },
 };
