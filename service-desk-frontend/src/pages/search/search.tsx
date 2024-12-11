@@ -21,6 +21,8 @@ import {
 
 interface Ticket {
   ticket_number: number;
+  ticket_status: string;
+  ticket_open_date_time: string;
   ticket_type: string;
   submotive: string;
   form: Record<string, string>;
@@ -167,6 +169,22 @@ const Search: React.FC = () => {
                   <input
                     type="text"
                     value={selectedTicket.ticket_type}
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label>Status:</label>
+                  <input
+                    type="text"
+                    value={selectedTicket.ticket_status}
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label>Data Hora Abertura:</label>
+                  <input
+                    type="text"
+                    value={selectedTicket.ticket_open_date_time}
                     readOnly
                   />
                 </div>
