@@ -23,7 +23,7 @@ export const Content = styled.div`
 `;
 
 // Lista de tipos de chamados
-export const TipoLista = styled.ul`
+export const TypeList = styled.ul`
   list-style-type: none;
   padding: 0;
   margin: 10px 0;
@@ -42,7 +42,7 @@ export const TipoLista = styled.ul`
 `;
 
 // Card para cada tipo de chamado
-export const TipoCard = styled.div`
+export const TypeCard = styled.div`
   background-color: #e9ecef;
   border: 1px solid #dee2e6;
   border-radius: 8px;
