@@ -1,25 +1,26 @@
+// src/pages/opening/ticketform.tsx
 import React, { useState } from "react";
 import axiosInstance from "../../api/axios";
 import { useAuth } from "../../contexts/AuthContext";
 import { FormContainer, InputField, Button, Message } from "./styles";
 
-interface CampoFormulario {
+interface FormField {
   [key: string]: string;
 }
 
-interface TipoChamado {
+interface TicketType {
   id: number;
-  tipo_chamado: string;
-  submotivo: string;
-  formulario: CampoFormulario;
+  ticket_type: string;
+  submotive: string;
+  form: FormField;
 }
 
 interface Props {
-  tipoChamado: TipoChamado;
+  selectedTicket: TicketType;
 }
 
-const TicketForm: React.FC<Props> = ({ tipoChamado }) => {
-  const [formData, setFormData] = useState<CampoFormulario>({});
+const TicketForm: React.FC<Props> = ({ selectedTicket }) => {
+  const [formData, setFormData] = useState<FormField>({});
   const { token } = useAuth();
   const [ticketNumber, setTicketNumber] = useState<number | null>(null);
   const [message, setMessage] = useState<{ text: string; success: boolean } | null>(null);
@@ -32,6 +33,7 @@ const TicketForm: React.FC<Props> = ({ tipoChamado }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Verificação se todos os campos foram preenchidos
     const allFieldsFilled = Object.values(formData).every(
       (value) => value.trim() !== ""
     );
@@ -45,8 +47,8 @@ const TicketForm: React.FC<Props> = ({ tipoChamado }) => {
       const response = await axiosInstance.post(
         "/open_ticket",
         {
-          ticket_type: tipoChamado.tipo_chamado,
-          submotivo: tipoChamado.submotivo,
+          ticket_type: selectedTicket.ticket_type, // Corrigido para o formato correto
+          submotive: selectedTicket.submotive,
           form: formData,
         },
         {
@@ -57,7 +59,7 @@ const TicketForm: React.FC<Props> = ({ tipoChamado }) => {
       );
 
       if (response.status === 201) {
-        setTicketNumber(response.data.ticket_number);
+        setTicketNumber(response.data.ticket_number); // Corrigido para "ticket_number"
         setMessage({
           text: `Chamado aberto com sucesso! Número do chamado: ${response.data.ticket_number}`,
           success: true,
@@ -76,12 +78,12 @@ const TicketForm: React.FC<Props> = ({ tipoChamado }) => {
 
   return (
     <FormContainer onSubmit={handleSubmit}>
-      {Object.keys(tipoChamado.formulario).map((campoKey) => (
-        <InputField key={campoKey}>
-          <label>{tipoChamado.formulario[campoKey]}</label>
+      {Object.keys(selectedTicket.form).map((fieldKey) => (
+        <InputField key={fieldKey}>
+          <label>{selectedTicket.form[fieldKey]}</label>
           <input
-            name={campoKey}
-            value={formData[campoKey] || ""}
+            name={fieldKey}
+            value={formData[fieldKey] || ""}
             onChange={handleChange}
           />
         </InputField>

@@ -14,11 +14,11 @@ import {
 
 
 interface DecodedToken {
-  nome: string;
+  name: string;
   }
 
 
-const Home: React.FC = () => {
+const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, pages, token, logout } = useAuth();
 
@@ -37,7 +37,15 @@ const Home: React.FC = () => {
     try {
       if (token) {
         const decoded: DecodedToken = jwtDecode(token);
-        return decoded.nome;
+        const name = decoded.name;
+        
+        // Divida o nome completo para pegar o primeiro nome
+        const firstName = name.split(' ')[0];
+  
+        // Transforme o primeiro nome com a primeira letra maiúscula e o restante minúscula
+        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  
+        return capitalizedFirstName;
       }
     } catch (error) {
       console.error("Erro ao decodificar token", error);
@@ -86,4 +94,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default HomePage;

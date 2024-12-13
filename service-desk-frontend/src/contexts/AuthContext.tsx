@@ -4,9 +4,7 @@ import { availablePages, Page } from "../config/pagesConfig";
 import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
-  sub: string;
-  nome: string;
-  cargo: string;
+  user: string;
   ids: number[];
   exp: number;
 }

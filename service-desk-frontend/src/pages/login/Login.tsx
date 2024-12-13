@@ -8,12 +8,12 @@ import { useAuth } from "../../contexts/AuthContext"; // Importe o contexto de a
 
 export const Login = () => {
   const {
-    email,
+    username,
     password,
     error,
     loading,
-    handleEmailChange,
-    handleSenhaChange,
+    handleUsernameChange,
+    handlePasswordChange,
     loginUser,
   } = useLogin();
 
@@ -39,13 +39,13 @@ export const Login = () => {
       <Content>
         <Text fontSize="32px" isBold color="#007bff">Login</Text>
         <InputGroup>
-          <Text color="#007bff">E-mail</Text>
+          <Text color="#007bff">Usuário</Text>
           <InputText
-            value={email}
-            onChange={handleEmailChange}
-            placeholder="Digite seu e-mail"
-            name="email"
-            type="email"
+            value={username}
+            onChange={handleUsernameChange}
+            placeholder="Digite o seu usuário"
+            name="username"
+            type="user"
             disabled={false}
             required={true}
           />
@@ -55,8 +55,8 @@ export const Login = () => {
           <Text color="#007bff">Senha</Text>
           <InputText
             value={password}
-            onChange={handleSenhaChange}
-            placeholder="Digite sua senha"
+            onChange={handlePasswordChange}
+            placeholder="Digite a sua senha"
             name="senha"
             type="password"
             disabled={false}

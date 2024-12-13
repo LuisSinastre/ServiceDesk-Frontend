@@ -1,30 +1,31 @@
+// src/pages/opening/opening.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { useAuth } from "../../contexts/AuthContext";
 import TicketForm from "./ticketform";
-import { Container, Content, TipoLista, TipoCard, HomeButton } from "./styles";
+import { Container, Content, TypeList, TypeCard, HomeButton } from "./styles";
 
 // Interfaces
-interface Chamado {
+interface Ticket {
   id: number;
-  tipo_chamado: string;
-  submotivo: string;
-  formulario: Record<string, string>;
+  ticket_type: string;
+  submotive: string;
+  form: Record<string, string>;
 }
 
-interface ChamadosAgrupados {
-  [tipo: string]: Chamado[];
+interface GroupedTickets {
+  [type: string]: Ticket[];
 }
 
-const Opening: React.FC = () => {
+const OpeningPage: React.FC = () => {
   const { token } = useAuth();
-  const [chamadosAgrupados, setChamadosAgrupados] = useState<ChamadosAgrupados>({});
-  const [selectedTipo, setSelectedTipo] = useState<Chamado | null>(null);
+  const [groupedTickets, setGroupedTickets] = useState<GroupedTickets>({});
+  const [selectedType, setSelectedType] = useState<Ticket | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchChamados = async () => {
+    const fetchTickets = async () => {
       if (token) {
         try {
           const response = await axiosInstance.get("/ticket_types", {
@@ -33,60 +34,61 @@ const Opening: React.FC = () => {
             },
           });
 
-          // Agrupando os chamados por tipo
-          const agrupados = response.data.reduce((acc: ChamadosAgrupados, chamado: Chamado) => {
-            if (!acc[chamado.tipo_chamado]) {
-              acc[chamado.tipo_chamado] = [];
+          // Log da resposta da API para verificação
+          console.log("Resposta da API:", response.data);
+
+          const grouped = response.data.reduce((acc: GroupedTickets, ticket: Ticket) => {
+            console.log("ticket.ticket_type:", ticket.ticket_type);  // Verificar se ticket_type está vindo corretamente
+            if (!acc[ticket.ticket_type]) {
+              acc[ticket.ticket_type] = [];
             }
-            acc[chamado.tipo_chamado].push(chamado);
+            acc[ticket.ticket_type].push(ticket);
             return acc;
           }, {});
 
-          setChamadosAgrupados(agrupados);
+          setGroupedTickets(grouped);
         } catch (error) {
-          console.error("Erro ao buscar chamados:", error);
+          console.error("Erro ao buscar tipos de chamados:", error);
         }
       }
     };
 
-    fetchChamados();
+    fetchTickets();
   }, [token]);
 
-  const handleTipoChamadoClick = (chamado: Chamado) => {
-    setSelectedTipo(chamado);
+  const handleTicketTypeClick = (ticket: Ticket) => {
+    console.log("Tipo de chamado selecionado:", ticket);  // Verifique qual ticket foi selecionado
+    setSelectedType(ticket);
   };
 
   return (
     <Container>
-      {/* Botão Home */}
       <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
-
       <h1>Tipos de Chamados Disponíveis</h1>
       <Content>
-        {Object.keys(chamadosAgrupados).length > 0 ? (
-          Object.keys(chamadosAgrupados).map((tipo) => (
-            <div key={tipo}>
-              <h2>{tipo}</h2>
-              <TipoLista>
-                {chamadosAgrupados[tipo].map((chamado) => (
-                  <TipoCard
-                    key={chamado.id}
-                    onClick={() => handleTipoChamadoClick(chamado)}
+        {Object.keys(groupedTickets).length > 0 ? (
+          Object.keys(groupedTickets).map((type) => (
+            <div key={type}>
+              <h2>{type}</h2>
+              <TypeList>
+                {groupedTickets[type].map((ticket) => (
+                  <TypeCard
+                    key={ticket.id}
+                    onClick={() => handleTicketTypeClick(ticket)}
                   >
-                    {chamado.submotivo}
-                  </TipoCard>
+                    {ticket.submotive}
+                  </TypeCard>
                 ))}
-              </TipoLista>
+              </TypeList>
             </div>
           ))
         ) : (
           <p>Carregando...</p>
         )}
-
-        {selectedTipo && (
+        {selectedType && (
           <div>
-            <h2>Preencha o formulário para: {selectedTipo.tipo_chamado}</h2>
-            <TicketForm tipoChamado={selectedTipo} />
+            <h2>Preencha o formulário para: {selectedType.ticket_type} - {selectedType.submotive}</h2>
+            <TicketForm selectedTicket={selectedType} />
           </div>
         )}
       </Content>
@@ -94,4 +96,4 @@ const Opening: React.FC = () => {
   );
 };
 
-export default Opening;
+export default OpeningPage;

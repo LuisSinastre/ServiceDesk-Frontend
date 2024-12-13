@@ -29,7 +29,7 @@ interface Ticket {
   user: number;
 }
 
-const Search: React.FC = () => {
+const SearchPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, token } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -230,4 +230,4 @@ const Search: React.FC = () => {
   );
 };
 
-export default Search;
+export default SearchPage;

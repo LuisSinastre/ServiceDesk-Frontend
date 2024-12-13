@@ -5,18 +5,18 @@ import { useAuth } from "../contexts/AuthContext"; // Importando o contexto de a
 // hooks/useLogin.ts
 export const useLogin = () => {
   const { login } = useAuth(); // Acesso à função de login do AuthContext
-  const [email, setEmail] = useState<string>(""); // Estado para o email
+  const [username, setUsername] = useState<string>(""); // Estado para o email
   const [password, setPassword] = useState<string>(""); // Estado para a senha
   const [error, setError] = useState<string | null>(null); // Estado para erro de login
   const [loading, setLoading] = useState<boolean>(false); // Estado de loading
 
   // Função para atualizar o estado de email
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
   };
 
   // Função para atualizar o estado de senha
-  const handleSenhaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
@@ -26,7 +26,7 @@ export const useLogin = () => {
     setError(null); // Limpa o erro antes de tentar novamente
     try {
       // Chama a função login da instância axios
-      const response = await axiosInstance.login(email, password);
+      const response = await axiosInstance.login(username, password);
       
       if (response?.token) {
         login(response.token); // Usando o login do contexto para armazenar o token
@@ -44,12 +44,12 @@ export const useLogin = () => {
   };
 
   return {
-    email,
+    username,
     password,
     error,
     loading,
-    handleEmailChange,
-    handleSenhaChange,
+    handleUsernameChange,
+    handlePasswordChange,
     loginUser
   };
 };
