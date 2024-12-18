@@ -1,6 +1,7 @@
 // src/pages/approval/approval.tsx
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
+import { routes } from "../../api/routes";  // Caminho relativo
 import { useAuth } from "../../contexts/AuthContext";
 import { Button, Container, TicketList, TicketItem, TicketDetails, Message, HomeButton } from "./styles";
 import { useNavigate } from "react-router-dom";
@@ -8,36 +9,55 @@ import FormField from "./FormField";  // Importando o componente FormField
 
 const ApprovalPage: React.FC = () => {
   const { token } = useAuth();
-  const [pendingTickets, setPendingTickets] = useState<any[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
-  const [message, setMessage] = useState<{ text: string; success: boolean } | null>(null);
-  const [rejectionReason, setRejectionReason] = useState<string>(""); // Motivo da reprovação
-  const [isRejecting, setIsRejecting] = useState<boolean>(false); // Novo estado para controlar reprovação
+  const [pendingTickets, setPendingTickets] = useState<any[]>([]);  // Estado para armazenar os chamados pendentes
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);  // Estado para armazenar o chamado selecionado
+  const [message, setMessage] = useState<{ text: string; success: boolean } | null>(null);  // Estado para armazenar mensagens de sucesso ou erro
+  const [rejectionReason, setRejectionReason] = useState<string>("");  // Estado para armazenar o motivo da reprovação
+  const [rejectionReasons, setRejectionReasons] = useState<string[]>([]);  // Novo estado para armazenar os motivos de reprovação (que virão do backend)
+  const [isRejecting, setIsRejecting] = useState<boolean>(false);  // Novo estado para controlar o modo de reprovação
   const navigate = useNavigate();
 
+  // useEffect para carregar dados assim que o componente for montado
   useEffect(() => {
+    // Função para buscar os motivos de reprovação do backend
+    const fetchRejectionReasons = async () => {
+      try {
+        const response = await axiosInstance.get(routes.approval.get_rejection_reasons, {
+          headers: {
+          Authorization: `Bearer ${token}`, // Inclui o token de autenticação
+        },
+      });
+      setRejectionReasons(response.data.rejection_reasons); // Armazena os motivos no estado rejectionReasons
+      } catch (error) {
+        setMessage({ text: "Erro ao buscar motivos de reprovação.", success: false });  // Mensagem de erro caso algo falhe
+      }
+    };
+
+    // Função para buscar os chamados pendentes de aprovação
     const fetchPendingTickets = async () => {
       if (token) {
         try {
-          const response = await axiosInstance.get("/pending_approvals", {
+          const response = await axiosInstance.get(routes.approval.pending_tickets, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token}`, // Inclui o token de autenticação
             },
           });
-          setPendingTickets(response.data);
+          setPendingTickets(response.data);  // Armazena os chamados pendentes no estado pendingTickets
         } catch (error) {
           setMessage({ text: "Erro ao buscar chamados pendentes.", success: false });
         }
       }
     };
 
-    fetchPendingTickets();
+    fetchRejectionReasons();  // Chama a função para buscar os motivos de reprovação
+    fetchPendingTickets();  // Chama a função para buscar os chamados pendentes
   }, [token]);
 
+  // Função para aprovar um chamado
   const handleApprove = async (ticketId: number) => {
     try {
       const response = await axiosInstance.post(
-        `/approve_ticket/${ticketId}`,
+        `${routes.approval.approve_tickets}/${ticketId}`,
         {},
         {
           headers: {
@@ -47,23 +67,24 @@ const ApprovalPage: React.FC = () => {
       );
       if (response.status === 200) {
         setMessage({ text: "Chamado aprovado com sucesso!", success: true });
-        setPendingTickets(pendingTickets.filter(ticket => ticket.ticket !== ticketId));
+        setPendingTickets(pendingTickets.filter(ticket => ticket.ticket !== ticketId));  // Remove o chamado aprovado da lista de pendentes
       }
     } catch (error) {
       setMessage({ text: "Erro ao aprovar chamado.", success: false });
     }
   };
 
+  // Função para recusar um chamado
   const handleReject = async (ticketId: number) => {
-    if (!rejectionReason.trim()) {
+    if (!rejectionReason.trim()) {  // Verifica se um motivo de reprovação foi selecionado
       setMessage({ text: "Por favor, insira o motivo da reprovação.", success: false });
       return;
     }
 
     try {
       const response = await axiosInstance.post(
-        `/reject_ticket/${ticketId}`,
-        { rejection_reason: rejectionReason },
+        `${routes.approval.reject_ticket}/${ticketId}`,
+        { rejection_reason: rejectionReason },  // Envia o motivo de reprovação
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -72,24 +93,26 @@ const ApprovalPage: React.FC = () => {
       );
       if (response.status === 200) {
         setMessage({ text: "Chamado recusado com sucesso!", success: true });
-        setPendingTickets(pendingTickets.filter(ticket => ticket.ticket !== ticketId));
-        setRejectionReason("");
-        setIsRejecting(false);
-        setSelectedTicket(null);
+        setPendingTickets(pendingTickets.filter(ticket => ticket.ticket !== ticketId));  // Remove o chamado recusado da lista de pendentes
+        setRejectionReason("");  // Limpa o campo de motivo após a reprovação
+        setIsRejecting(false);  // Desativa o modo de reprovação
+        setSelectedTicket(null);  // Fecha a visualização do chamado
       }
     } catch (error) {
       setMessage({ text: "Erro ao recusar chamado.", success: false });
     }
   };
 
+  // Função para exibir os detalhes do chamado
   const handleShowDetails = (ticket: any) => {
-    setSelectedTicket(ticket);
-    setIsRejecting(false); // Resetar o estado de reprovação ao exibir detalhes
+    setSelectedTicket(ticket);  // Armazena o chamado selecionado
+    setIsRejecting(false);  // Desativa o modo de reprovação ao exibir os detalhes
   };
 
+  // Função para iniciar a reprovação de um chamado
   const handleStartRejection = (ticket: any) => {
-    setSelectedTicket(ticket);
-    setIsRejecting(true); // Ativar o modo de reprovação
+    setSelectedTicket(ticket);  // Armazena o chamado selecionado
+    setIsRejecting(true);  // Ativa o modo de reprovação
   };
 
   return (
@@ -97,13 +120,13 @@ const ApprovalPage: React.FC = () => {
       <h1>Chamados Pendentes de Aprovação</h1>
       <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
 
-      {message && <Message success={message.success}>{message.text}</Message>}
+      {message && <Message success={message.success}>{message.text}</Message>}  {/* Exibe a mensagem de sucesso ou erro */}
 
       {selectedTicket && (
         <TicketDetails>
           <p><strong>Chamado:</strong> {selectedTicket.ticket}</p>
           <p><strong>Motivo/Submotivo:</strong> {selectedTicket.motive_submotive}</p>
-          
+
           {selectedTicket.form && (
             <>
               {Object.entries(selectedTicket.form).map(([key, value]) => (
@@ -112,15 +135,22 @@ const ApprovalPage: React.FC = () => {
             </>
           )}
 
-          {/* Outras informações do chamado podem ser exibidas aqui */}
-
+          {/* Exibição do motivo de reprovação, se o usuário estiver no modo de reprovação */}
           {isRejecting ? (
             <>
-              <textarea
-                placeholder="Insira o motivo da reprovação"
+              <label htmlFor="rejectionReason">Motivo da Reprovação:</label>
+              <select
+                id="rejectionReason"
                 value={rejectionReason}
-                onChange={e => setRejectionReason(e.target.value)}
-              />
+                onChange={e => setRejectionReason(e.target.value)}  // Atualiza o motivo de reprovação selecionado
+              >
+                <option value="">Selecione um motivo</option>
+                {rejectionReasons.map((reason, index) => (
+                  <option key={index} value={reason}>
+                    {reason}
+                  </option>
+                ))}
+              </select>
               <Button onClick={() => handleReject(selectedTicket.ticket)}>Confirmar Reprovação</Button>
             </>
           ) : (
@@ -128,7 +158,7 @@ const ApprovalPage: React.FC = () => {
           )}
         </TicketDetails>
       )}
-      
+
       <TicketList>
         {pendingTickets.length > 0 ? (
           pendingTickets.map(ticket => (
