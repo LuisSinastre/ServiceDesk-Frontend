@@ -11,6 +11,7 @@ interface Ticket {
   id: number;
   ticket_type: string;
   submotive: string;
+  motive_submotive: string;
   form: Record<string, string>;
 }
 
@@ -87,7 +88,7 @@ const OpeningPage: React.FC = () => {
         )}
         {selectedType && (
           <div>
-            <h2>Preencha o formulário para: {selectedType.ticket_type} - {selectedType.submotive}</h2>
+            <h2>Preencha o formulário para: {selectedType.motive_submotive}</h2>
             <TicketForm selectedTicket={selectedType} />
           </div>
         )}
