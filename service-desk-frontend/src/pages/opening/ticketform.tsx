@@ -12,6 +12,7 @@ interface TicketType {
   id: number;
   ticket_type: string;
   submotive: string;
+  motive_submotive: string;
   form: FormField;
 }
 
@@ -47,8 +48,9 @@ const TicketForm: React.FC<Props> = ({ selectedTicket }) => {
       const response = await axiosInstance.post(
         "/open_ticket",
         {
-          ticket_type: selectedTicket.ticket_type, // Corrigido para o formato correto
+          ticket_type: selectedTicket.ticket_type, 
           submotive: selectedTicket.submotive,
+          motive_submotive: selectedTicket.motive_submotive,
           form: formData,
         },
         {
@@ -59,7 +61,7 @@ const TicketForm: React.FC<Props> = ({ selectedTicket }) => {
       );
 
       if (response.status === 201) {
-        setTicketNumber(response.data.ticket_number); // Corrigido para "ticket_number"
+        setTicketNumber(response.data.ticket_number); 
         setMessage({
           text: `Chamado aberto com sucesso! Número do chamado: ${response.data.ticket_number}`,
           success: true,
