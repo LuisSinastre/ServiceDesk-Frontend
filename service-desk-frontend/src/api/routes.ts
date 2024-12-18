@@ -14,7 +14,8 @@ export const routes = {
   },
 
   approval: {
-    ticket_types: `${API_URL}/approve_ticket`, // Rota para aprovar o chamado selecionado
-    list_tickets: `${API_URL}/reject_ticket`, // Rota para reprovar o chamado selecionado
+    pending_tickets: `${API_URL}/pending_approvals`, // Rota para aprovar o chamado selecionado
+    approve_tickets: `${API_URL}/approve_ticket`, // Rota para aprovar o chamado selecionado
+    reject_ticket: `${API_URL}/reject_ticket`, // Rota para reprovar o chamado selecionado
   },
 };
