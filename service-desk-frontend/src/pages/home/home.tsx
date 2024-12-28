@@ -15,6 +15,7 @@ import {
 
 interface DecodedToken {
   name: string;
+  user: string;
   }
 
 
@@ -53,10 +54,23 @@ const HomePage: React.FC = () => {
     return "";
   };
 
+  const getuser = () => {
+    try {
+      if (token) {
+        const decoded: DecodedToken = jwtDecode(token);
+        const user = decoded.user;
+        return user;
+      }
+    } catch (error) {
+      console.error("Erro ao decodificar token", error);
+    }
+    return "";
+  };
+
   return (
     <Container>
       <Content>
-        <Title>Olá {getname()}, o que precisa fazer hoje?</Title>
+        <Title>Olá {getuser()} - {getname()}, o que precisa fazer hoje?</Title>
         <PagesContainer>
           {pages.length > 0 ? (
             <div>
