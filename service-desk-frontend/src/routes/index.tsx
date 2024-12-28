@@ -7,6 +7,7 @@ import ApprovalPage from "../pages/approval/approval";
 import SearchPage from "../pages/search/search";
 import OpeningPage from "../pages/opening/opening";
 import HomePage from "../pages/home/home";
+import TreatmentPage from "../pages/treatment/treatment";
 
 
 
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/opening" element={<OpeningPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/approval" element={<ApprovalPage />} />
+          <Route path="/treatment" element={<TreatmentPage />} />
 
           {/* Rota para links inválidos */}
           <Route path="*" element={<Navigate to="/home" />} />

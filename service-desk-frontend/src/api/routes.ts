@@ -19,4 +19,8 @@ export const routes = {
     reject_ticket: `${API_URL}/reject_ticket`, // Rota para reprovar o chamado selecionado
     get_rejection_reasons: `${API_URL}/get_rejection_reasons`, // Rota para pegar os motivos de reprovação
   },
+
+  treatment: {
+    processing_tickets: `${API_URL}/processing_tickets`, // Rota para aprovar o chamado selecionado
+  },
 };

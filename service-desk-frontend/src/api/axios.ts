@@ -33,44 +33,4 @@ axiosInstance.login = async (username: string, password: string) => {
   }
 };
 
-// axiosInstance.getAllUsers = async () => {
-//   try {
-//     const response = await axiosInstance.get(routes.users.getAll);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao obter usuários:', error);
-//     throw error;
-//   }
-// };
-
-// axiosInstance.createUser = async (userData: { name: string; email: string }) => {
-//   try {
-//     const response = await axiosInstance.post(routes.users.create, userData);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao criar usuário:', error);
-//     throw error;
-//   }
-// };
-
-// axiosInstance.updateUser = async (id: string, userData: { name?: string; email?: string }) => {
-//   try {
-//     const response = await axiosInstance.put(routes.users.update(id), userData);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao atualizar usuário:', error);
-//     throw error;
-//   }
-// };
-
-// axiosInstance.deleteUser = async (id: string) => {
-//   try {
-//     const response = await axiosInstance.delete(routes.users.delete(id));
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao excluir usuário:', error);
-//     throw error;
-//   }
-// };
-
 export default axiosInstance;
