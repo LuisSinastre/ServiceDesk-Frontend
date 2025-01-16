@@ -1,27 +1,22 @@
-// src/pages/treatment/treatment.tsx
-
 import { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/AuthContext"
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { routes } from "../../api/routes";
 import { HomeButton, Container, TicketList, TicketItem, ButtonGroup, ActionButton } from "../treatment/styles";
-import FormDetails from "../treatment/formDetails";
-
-
-
-
-
+import FormDetails from "./formDetails";
 
 const TreatmentPage: React.FC = () => {
     const { token } = useAuth();
     const [processingTickets, setProcessingTicket] = useState<any[]>([]);
     const [message, setMessage] = useState<{ text: string; success: boolean } | null>(null);
+    const [selectedTicket, setSelectedTicket] = useState<number | null>(null); // Chamado selecionado
+    const [observation, setObservation] = useState<string>(""); // Observação do usuário
+    const [isTreating, setIsTreating] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    useEffect(() => { 
-
-        const fetchsetProcessingTicket = async () => {
+    useEffect(() => {
+        const fetchProcessingTickets = async () => {
             if (token) {
                 try {
                     const response = await axiosInstance.get(routes.treatment.processing_tickets, {
@@ -31,33 +26,56 @@ const TreatmentPage: React.FC = () => {
                     });
                     setProcessingTicket(response.data);
                 } catch (error) {
-                    setMessage({text: "Erro ao buscar chamados em processamento", success: false});
+                    setMessage({ text: "Erro ao buscar chamados em processamento", success: false });
                 }
             }
-        }
-        fetchsetProcessingTicket();
-
+        };
+        fetchProcessingTickets();
     }, [token]);
 
-    const handleTreat = (ticketId: string) => {
-        console.log(`Tratando chamado: ${ticketId}`);
-        // Adicione aqui a lógica para tratar o chamado
+    const handleTreat = async () => {
+        if (!selectedTicket) return;
+        setIsTreating(true);
+
+        try {
+            const response = await axiosInstance.post(
+                `${routes.treatment.treat_ticket}/${selectedTicket}`,
+                { observation },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                setMessage({ text: "Chamado tratado com sucesso!", success: true });
+                setProcessingTicket(processingTickets.filter(ticket => ticket.ticket !== selectedTicket));
+            }
+        } catch (error) {
+            setMessage({ text: "Erro ao tratar o chamado.", success: false });
+        } finally {
+            setIsTreating(false);
+            setSelectedTicket(null); // Limpa o chamado selecionado
+            setObservation(""); // Limpa a observação
+        }
     };
 
-    const handleCancel = (ticketId: string) => {
-        console.log(`Cancelando chamado: ${ticketId}`);
-        // Adicione aqui a lógica para cancelar o chamado
+    const handleCancel = () => {
+        setSelectedTicket(null); // Cancela o tratamento
+        setObservation(""); // Limpa o campo de observação
     };
 
-    
     return (
         <Container>
             <h1>Chamados na esteira</h1>
             <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
-            
+
+            {message && <p style={{ color: message.success ? "green" : "red" }}>{message.text}</p>}
+
             <TicketList>
                 {processingTickets.length > 0 ? (
-                    processingTickets.map((ticket) => (
+                    processingTickets.map(ticket => (
                         <TicketItem key={ticket.ticket}>
                             <h3>#{ticket.ticket} - {ticket.motive_submotive}</h3>
                             <div>
@@ -69,8 +87,23 @@ const TreatmentPage: React.FC = () => {
                             <div><strong>Open Date:</strong> {ticket.ticket_open_date_time}</div>
                             <div><strong>Status:</strong> {ticket.ticket_status}</div>
                             <ButtonGroup>
-                                <ActionButton onClick={() => handleTreat(ticket.ticket)}>Tratar</ActionButton>
-                                <ActionButton onClick={() => handleCancel(ticket.ticket)}>Cancelar</ActionButton>
+                                {selectedTicket === ticket.ticket ? (
+                                    <>
+                                        <textarea
+                                            value={observation}
+                                            onChange={e => setObservation(e.target.value)}
+                                            placeholder="Digite sua observação"
+                                            rows={3}
+                                            style={{ width: "100%", marginTop: "10px" }}
+                                        />
+                                        <ActionButton onClick={handleTreat} disabled={isTreating}>
+                                            {isTreating ? "Processando..." : "Confirmar"}
+                                        </ActionButton>
+                                        <ActionButton onClick={handleCancel}>Cancelar</ActionButton>
+                                    </>
+                                ) : (
+                                    <ActionButton onClick={() => setSelectedTicket(ticket.ticket)}>Tratar</ActionButton>
+                                )}
                             </ButtonGroup>
                         </TicketItem>
                     ))
@@ -80,10 +113,6 @@ const TreatmentPage: React.FC = () => {
             </TicketList>
         </Container>
     );
-    
-
 };
 
-
 export default TreatmentPage;
-

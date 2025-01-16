@@ -89,4 +89,3 @@ export const ActionButton = styled.button`
         cursor: not-allowed;
     }
 `;
-
