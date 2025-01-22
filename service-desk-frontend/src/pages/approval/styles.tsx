@@ -19,13 +19,6 @@ export const TicketItem = styled.div`
   background-color: #f9f9f9;
 `;
 
-export const TicketDetails = styled.div`
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #f1f1f1;
-  border-radius: 5px;
-`;
-
 export const Button = styled.button`
   background-color: #007bff;
   color: white;
