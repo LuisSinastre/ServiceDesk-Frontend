@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axios";
 import { routes } from "../../api/routes";  // Caminho relativo
 import { useAuth } from "../../contexts/AuthContext";
-import { Button, Container, TicketList, TicketItem, TicketDetails, Message, HomeButton } from "./styles";
+import { Button, Container, TicketList, TicketItem, Message, HomeButton } from "./styles";
 import { useNavigate } from "react-router-dom";
 import FormField from "./FormField";  // Importando o componente FormField
 
@@ -103,11 +103,6 @@ const ApprovalPage: React.FC = () => {
     }
   };
 
-  // Função para exibir os detalhes do chamado
-  const handleShowDetails = (ticket: any) => {
-    setSelectedTicket(ticket);  // Armazena o chamado selecionado
-    setIsRejecting(false);  // Desativa o modo de reprovação ao exibir os detalhes
-  };
 
   // Função para iniciar a reprovação de um chamado
   const handleStartRejection = (ticket: any) => {
@@ -119,54 +114,49 @@ const ApprovalPage: React.FC = () => {
     <Container>
       <h1>Chamados Pendentes de Aprovação</h1>
       <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
-
+  
       {message && <Message success={message.success}>{message.text}</Message>}  {/* Exibe a mensagem de sucesso ou erro */}
-
-      {selectedTicket && (
-        <TicketDetails>
-          <p><strong>Chamado:</strong> {selectedTicket.ticket}</p>
-          <p><strong>Motivo/Submotivo:</strong> {selectedTicket.motive_submotive}</p>
-
-          {selectedTicket.form && (
-            <>
-              {Object.entries(selectedTicket.form).map(([key, value]) => (
-                <FormField key={key} label={key} value={value && typeof value === "object" ? JSON.stringify(value) : value || "N/A"} />
-              ))}
-            </>
-          )}
-
-          {/* Exibição do motivo de reprovação, se o usuário estiver no modo de reprovação */}
-          {isRejecting ? (
-            <>
-              <label htmlFor="rejectionReason">Motivo da Reprovação:</label>
-              <select
-                id="rejectionReason"
-                value={rejectionReason}
-                onChange={e => setRejectionReason(e.target.value)}  // Atualiza o motivo de reprovação selecionado
-              >
-                <option value="">Selecione um motivo</option>
-                {rejectionReasons.map((reason, index) => (
-                  <option key={index} value={reason}>
-                    {reason}
-                  </option>
-                ))}
-              </select>
-              <Button onClick={() => handleReject(selectedTicket.ticket)}>Confirmar Reprovação</Button>
-            </>
-          ) : (
-            <Button onClick={() => setSelectedTicket(null)}>Fechar</Button>
-          )}
-        </TicketDetails>
-      )}
-
+  
       <TicketList>
         {pendingTickets.length > 0 ? (
           pendingTickets.map(ticket => (
             <TicketItem key={ticket.ticket}>
               <h3>#{ticket.ticket} - {ticket.motive_submotive}</h3>
-              <Button onClick={() => handleShowDetails(ticket)}>Ver Detalhes</Button>
-              <Button onClick={() => handleApprove(ticket.ticket)}>Aprovar</Button>
-              <Button onClick={() => handleStartRejection(ticket)}>Recusar</Button>
+              <div>
+                {ticket.form &&
+                  Object.entries(ticket.form).map(([key, value]) => (
+                    <FormField key={key} label={key} value={value} />
+                  ))}
+              </div>
+              <div><strong>User:</strong> {ticket.user}</div>
+              <div><strong>Name:</strong> {ticket.name}</div>
+              <div><strong>Manager:</strong> {ticket.manager}</div>
+              <div><strong>Open Date:</strong> {ticket.ticket_open_date_time}</div>
+              <div><strong>Status:</strong> {ticket.ticket_status}</div>
+  
+              {isRejecting && selectedTicket?.ticket === ticket.ticket ? (
+                <>
+                  <label htmlFor="rejectionReason">Motivo da Reprovação:</label>
+                  <select
+                    id="rejectionReason"
+                    value={rejectionReason}
+                    onChange={e => setRejectionReason(e.target.value)}  // Atualiza o motivo de reprovação selecionado
+                  >
+                    <option value="">Selecione um motivo</option>
+                    {rejectionReasons.map((reason, index) => (
+                      <option key={index} value={reason}>
+                        {reason}
+                      </option>
+                    ))}
+                  </select>
+                  <Button onClick={() => handleReject(ticket.ticket)}>Confirmar Reprovação</Button>
+                </>
+              ) : (
+                <>
+                  <Button onClick={() => handleApprove(ticket.ticket)}>Aprovar</Button>
+                  <Button onClick={() => handleStartRejection(ticket)}>Recusar</Button>
+                </>
+              )}
             </TicketItem>
           ))
         ) : (
@@ -175,6 +165,8 @@ const ApprovalPage: React.FC = () => {
       </TicketList>
     </Container>
   );
+  
+  
 };
 
 export default ApprovalPage;

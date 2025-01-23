@@ -22,5 +22,8 @@ export const routes = {
 
   treatment: {
     processing_tickets: `${API_URL}/processing_tickets`, // Rota para aprovar o chamado selecionado
+    treat_ticket: `${API_URL}/treat_ticket`, // Rota para aprovar o chamado selecionado
+    get_cancel_reasons: `${API_URL}/get_cancel_reasons`, // Rota para trazer os motivos de cancelamento
+    cancel_ticket: `${API_URL}/cancel_ticket`, // Rota para cancelar o chamado no tratamento
   },
 };

@@ -18,6 +18,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "./styles";
+import FormField from "./FormField";
 
 interface Ticket {
   ticket_number: number;
@@ -27,6 +28,7 @@ interface Ticket {
   submotive: string;
   form: Record<string, string>;
   user: number;
+  name: string;
 }
 
 const SearchPage: React.FC = () => {
@@ -141,8 +143,16 @@ const SearchPage: React.FC = () => {
               <div className="ticket-number">
                 <strong>Chamado #{ticket.ticket_number}</strong>
               </div>
-              <div>Tipo: {ticket.ticket_type}</div>
-              <div>Submotivo: {ticket.submotive}</div>
+              <div><strong>Tipo:</strong> {ticket.ticket_type}</div>
+              <div><strong>Submotivo:</strong> {ticket.submotive}</div>
+              <div>
+                {ticket.form &&
+                  Object.entries(ticket.form).map(([key, value]) => (
+                    <FormField key={key} label={key} value={value} />
+                  ))}
+              </div>
+              <div><strong>Usuário:</strong> {ticket.user}</div>
+              <div><strong>Nome:</strong> {ticket.name}</div>
             </TicketItem>
           ))
         )}

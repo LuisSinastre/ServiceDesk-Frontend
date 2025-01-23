@@ -64,8 +64,8 @@ const OpeningPage: React.FC = () => {
 
   return (
     <Container>
-      <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
       <h1>Tipos de Chamados Disponíveis</h1>
+      <HomeButton onClick={() => navigate("/home")}>Ir para Home</HomeButton>
       <Content>
         {Object.keys(groupedTickets).length > 0 ? (
           Object.keys(groupedTickets).map((type) => (
